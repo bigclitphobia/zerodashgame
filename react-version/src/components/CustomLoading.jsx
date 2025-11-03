@@ -12,10 +12,10 @@ export default function CustomLoading({ progress }) {
   // Loading tips that cycle during load
   const loadingTips = [
     'Collect coins to boost your score!',
-    'Swipe left or right to dodge obstacles',
+    'Avoid obstacles',
     'Connect your Zerion wallet for rewards',
     'Jump over gaps to stay alive',
-    'Power-ups give you special abilities',
+    'Zero Dash NFT give you special level',
     'Compete on the leaderboard!',
     'Temple treasures await...',
   ];
