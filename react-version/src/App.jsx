@@ -5,13 +5,16 @@ import Leaderboard from './components/Leaderboard';
 import GameCanvas from './components/GameCanvas';
 import RealTimeLeaderboardSidebar from './components/RealTimeLeaderboardSidebar';
 import UserProfileSidebar from './components/UserProfileSidebar';
+import CharacterMarketplace from './components/CharacterMarketplace';
+import DailyMissions from './components/DailyMissions';
+import NFTPassStatus from './components/NFTPassStatus';
 import Particles from './components/Particles';
 
 /**
  * Main App Component
  * Manages application state and screen flow:
  * 1. Splash Screen (Connect Wallet)
- * 2. Menu Screen (Start Game / Leaderboard) - "READY?" page
+ * 2. Enhanced Menu Screen (Marketplace + Ready + Missions + NFT Status)
  * 3. Game Screen (Unity Canvas + Live Sidebars)
  * 4. Leaderboard Modal (Overlay)
  */
@@ -104,37 +107,65 @@ function App() {
         />
       )}
 
-      {/* Menu Screen: Start Game + Leaderboard (READY? page) */}
+      {/* Enhanced Menu Screen: NFT Status + Marketplace + Ready + Missions */}
       {currentScreen === 'menu' && (
-        <div className="fixed inset-0 flex items-center justify-center p-5 z-[100]">
-          <div className="max-w-2xl w-full flex flex-col items-center gap-8 fade-in">
-            {/* Title */}
-            <h2
-              className="text-3xl md:text-4xl font-pixel text-zerion-yellow"
-              style={{ 
-                textShadow: '3px 3px 0 rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)' 
-              }}
-            >
-              READY?
-            </h2>
+        <>
+          {/* Top: NFT Pass Status */}
+          <NFTPassStatus walletAddress={walletAddress} />
 
-            {/* Start Game Button */}
-            <button
-              onClick={handleStartGame}
-              className="pixel-button-primary"
-            >
-              Start Game
-            </button>
+          {/* Left: Character Marketplace */}
+          <CharacterMarketplace />
 
-            {/* Leaderboard Button */}
-            <button
-              onClick={handleOpenLeaderboard}
-              className="pixel-button-secondary"
-            >
-              Leaderboard
-            </button>
+          {/* Center: Ready Buttons */}
+          <div className="fixed inset-0 flex items-center justify-center p-5 z-[100]">
+            <div className="max-w-md w-full flex flex-col items-center gap-6 fade-in">
+              {/* Title */}
+              <h2
+                className="text-4xl md:text-5xl font-pixel text-zerion-yellow"
+                style={{ 
+                  textShadow: '4px 4px 0 rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.6)' 
+                }}
+              >
+                READY?
+              </h2>
+
+              {/* Start Game Button */}
+              <button
+                onClick={handleStartGame}
+                className="pixel-button-primary w-full text-lg"
+              >
+                🎮 START GAME
+              </button>
+
+              {/* Leaderboard Button */}
+              <button
+                onClick={handleOpenLeaderboard}
+                className="pixel-button-secondary w-full"
+              >
+                🏆 LEADERBOARD
+              </button>
+
+              {/* Quick Stats */}
+              <div className="mt-4 grid grid-cols-3 gap-3 w-full">
+                <div className="bg-zerion-blue-dark/60 border-2 border-zerion-blue rounded-lg p-3 text-center">
+                  <p className="text-xs font-pixel text-zerion-blue-light mb-1">BEST</p>
+                  <p className="text-lg font-pixel text-zerion-yellow font-bold">12.5K</p>
+                </div>
+                <div className="bg-zerion-blue-dark/60 border-2 border-zerion-blue rounded-lg p-3 text-center">
+                  <p className="text-xs font-pixel text-zerion-blue-light mb-1">COINS</p>
+                  <p className="text-lg font-pixel text-zerion-yellow font-bold">45.6K</p>
+                </div>
+                <div className="bg-zerion-blue-dark/60 border-2 border-zerion-blue rounded-lg p-3 text-center">
+                  <p className="text-xs font-pixel text-zerion-blue-light mb-1">RANK</p>
+                  <p className="text-lg font-pixel text-zerion-yellow font-bold">#156</p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* Right: Daily Missions */}
+          <DailyMissions />
+        </>
       )}
 
       {/* Game Screen: Unity Canvas with Sidebars */}
