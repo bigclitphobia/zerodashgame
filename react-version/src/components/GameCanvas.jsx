@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import CustomLoading from './CustomLoading';
 
 /**
- * GameCanvas Component
+ * GameCanvas Component - RESPONSIVE VERSION
  * Manages Unity WebGL instance loading and rendering
+ * Adapts to desktop (900x600) and mobile (432x768) devices
  * 
  * @param {Object} props
  * @param {string} props.walletAddress - Wallet address to pass to Unity
@@ -16,6 +17,30 @@ export default function GameCanvas({ walletAddress, isVisible }) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dimensions, setDimensions] = useState({ width: 900, height: 600 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  /**
+   * Detect device type and set appropriate dimensions
+   */
+  useEffect(() => {
+    const checkDevice = () => {
+      const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      if (mobile) {
+        // Mobile: Portrait mode
+        setDimensions({ width: 432, height: 768 });
+      } else {
+        // Desktop: Landscape mode
+        setDimensions({ width: 900, height: 600 });
+      }
+    };
+
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
 
   /**
    * Unity banner display function for warnings/errors
@@ -60,28 +85,28 @@ export default function GameCanvas({ walletAddress, isVisible }) {
     setError(null);
 
     try {
-    // 🔥 POINT TO R2 BUCKET
-    const R2_BASE_URL = 'https://pub-c51325b05b6848599be1cf2978bc4c0e.r2.dev/Latest';
-    
-    const buildUrl = R2_BASE_URL;
-    const loaderUrl = `${buildUrl}/ZeroDash.loader.js`;
-    
-    const config = {
-      arguments: [],
-      dataUrl: `${buildUrl}/ZeroDash.data`,
-      frameworkUrl: `${buildUrl}/ZeroDash.framework.js`,
-      codeUrl: `${buildUrl}/ZeroDash.wasm`,
-      streamingAssetsUrl: '/StreamingAssets', // Still local
-      companyName: 'Kult Games',
-      productName: 'Zero Dash',
-      productVersion: '1.0',
-      showBanner: unityShowBanner,
-      matchWebGLToCanvasSize: false,
-      devicePixelRatio: 1,
-    };
+      // 🔥 POINT TO R2 BUCKET
+      const R2_BASE_URL = 'https://pub-c51325b05b6848599be1cf2978bc4c0e.r2.dev/Latest';
+      
+      const buildUrl = R2_BASE_URL;
+      const loaderUrl = `${buildUrl}/ZeroDash.loader.js`;
+      
+      const config = {
+        arguments: [],
+        dataUrl: `${buildUrl}/ZeroDash.data`,
+        frameworkUrl: `${buildUrl}/ZeroDash.framework.js`,
+        codeUrl: `${buildUrl}/ZeroDash.wasm`,
+        streamingAssetsUrl: '/StreamingAssets',
+        companyName: 'Kult Games',
+        productName: 'Zero Dash',
+        productVersion: '1.0',
+        showBanner: unityShowBanner,
+        matchWebGLToCanvasSize: false,
+        devicePixelRatio: 1,
+      };
 
       // Mobile viewport adjustment
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      if (isMobile) {
         let meta = document.querySelector('meta[name="viewport"]');
         if (!meta) {
           meta = document.createElement('meta');
@@ -114,13 +139,13 @@ export default function GameCanvas({ walletAddress, isVisible }) {
           unityInstanceRef.current = unityInstance;
           setIsLoading(false);
 
-          // Force canvas to maintain exact dimensions
+          // Set canvas dimensions based on device
           const canvas = canvasRef.current;
           if (canvas) {
-            canvas.width = 432;
-            canvas.height = 768;
-            canvas.style.width = '432px';
-            canvas.style.height = '768px';
+            canvas.width = dimensions.width;
+            canvas.height = dimensions.height;
+            canvas.style.width = `${dimensions.width}px`;
+            canvas.style.height = `${dimensions.height}px`;
           }
 
           // Send wallet address to Unity after a short delay
@@ -159,13 +184,26 @@ export default function GameCanvas({ walletAddress, isVisible }) {
   };
 
   /**
+   * Reload Unity when dimensions change (device orientation/resize)
+   */
+  useEffect(() => {
+    if (unityInstanceRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+      canvas.style.width = `${dimensions.width}px`;
+      canvas.style.height = `${dimensions.height}px`;
+    }
+  }, [dimensions]);
+
+  /**
    * Load Unity when component becomes visible
    */
   useEffect(() => {
     if (isVisible && !unityInstanceRef.current && !isLoading) {
       loadUnity();
     }
-  }, [isVisible]);
+  }, [isVisible, dimensions]);
 
   /**
    * Cleanup on unmount
@@ -188,26 +226,31 @@ export default function GameCanvas({ walletAddress, isVisible }) {
       className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[500]
                   transition-opacity duration-500
                   ${isVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-      style={{ width: '432px', height: '768px' }}
+      style={{ 
+        width: `${dimensions.width}px`, 
+        height: `${dimensions.height}px`,
+        maxWidth: '100vw',
+        maxHeight: '100vh'
+      }}
     >
       {/* Unity Canvas */}
       <canvas
         ref={canvasRef}
         id="unity-canvas"
-        width="432"
-        height="768"
+        width={dimensions.width}
+        height={dimensions.height}
         tabIndex="-1"
         className="border-4 border-zerion-yellow block"
         style={{ 
           boxShadow: '0 0 40px rgba(255, 215, 0, 0.4)',
-          width: '432px',
-          height: '768px',
-          imageRendering: 'pixelated'
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
+          imageRendering: isMobile ? 'pixelated' : 'auto'
         }}
       />
 
       {/* Custom Loading Screen */}
-      {isLoading && <CustomLoading progress={loadingProgress} />}
+      {isLoading && <CustomLoading progress={loadingProgress} isMobile={isMobile} />}
 
       {/* Error Display */}
       {error && (
@@ -220,6 +263,13 @@ export default function GameCanvas({ walletAddress, isVisible }) {
 
       {/* Unity Warning Banner */}
       <div id="unity-warning" className="fixed bottom-5 left-1/2 -translate-x-1/2 max-w-2xl z-[3000]" />
+
+      {/* Device indicator (debug) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+          {isMobile ? 'Mobile' : 'Desktop'} - {dimensions.width}x{dimensions.height}
+        </div>
+      )}
     </div>
   );
 }
