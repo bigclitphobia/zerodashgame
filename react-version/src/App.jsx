@@ -3,14 +3,16 @@ import { useWallet } from './hooks/useWallet';
 import WalletConnect from './components/WalletConnect';
 import Leaderboard from './components/Leaderboard';
 import GameCanvas from './components/GameCanvas';
+import RealTimeLeaderboardSidebar from './components/RealTimeLeaderboardSidebar';
+import UserProfileSidebar from './components/UserProfileSidebar';
 import Particles from './components/Particles';
 
 /**
  * Main App Component
  * Manages application state and screen flow:
  * 1. Splash Screen (Connect Wallet)
- * 2. Menu Screen (Start Game / Leaderboard)
- * 3. Game Screen (Unity Canvas)
+ * 2. Menu Screen (Start Game / Leaderboard) - "READY?" page
+ * 3. Game Screen (Unity Canvas + Live Sidebars)
  * 4. Leaderboard Modal (Overlay)
  */
 function App() {
@@ -49,6 +51,13 @@ function App() {
   };
 
   /**
+   * Handle back to menu from game
+   */
+  const handleBackToMenu = () => {
+    setCurrentScreen('menu');
+  };
+
+  /**
    * Handle leaderboard open
    */
   const handleOpenLeaderboard = () => {
@@ -63,7 +72,7 @@ function App() {
   };
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="relative w-full h-screen overflow-hidden">
       {/* Particle Animation Background */}
       <Particles />
 
@@ -95,9 +104,9 @@ function App() {
         />
       )}
 
-      {/* Menu Screen: Start Game + Leaderboard */}
+      {/* Menu Screen: Start Game + Leaderboard (READY? page) */}
       {currentScreen === 'menu' && (
-        <div className="fixed inset-0 flex items-center justify-center p-5">
+        <div className="fixed inset-0 flex items-center justify-center p-5 z-[100]">
           <div className="max-w-2xl w-full flex flex-col items-center gap-8 fade-in">
             {/* Title */}
             <h2
@@ -128,13 +137,31 @@ function App() {
         </div>
       )}
 
-      {/* Game Screen: Unity Canvas */}
-      <GameCanvas
-        walletAddress={walletAddress}
-        isVisible={currentScreen === 'game'}
-      />
+      {/* Game Screen: Unity Canvas with Sidebars */}
+      {currentScreen === 'game' && (
+        <>
+          {/* Left Sidebar: Real-time Leaderboard */}
+          <RealTimeLeaderboardSidebar
+            isVisible={currentScreen === 'game'}
+            currentUserAddress={truncatedAddress}
+          />
 
-      {/* Leaderboard Modal */}
+          {/* Center: Game Canvas */}
+          <GameCanvas
+            walletAddress={walletAddress}
+            isVisible={currentScreen === 'game'}
+            onBack={handleBackToMenu}
+          />
+
+          {/* Right Sidebar: User Profile */}
+          <UserProfileSidebar
+            isVisible={currentScreen === 'game'}
+            walletAddress={walletAddress}
+          />
+        </>
+      )}
+
+      {/* Leaderboard Modal (can be opened from menu) */}
       <Leaderboard
         isOpen={showLeaderboard}
         onClose={handleCloseLeaderboard}

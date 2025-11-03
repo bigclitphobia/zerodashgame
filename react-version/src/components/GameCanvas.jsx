@@ -9,8 +9,9 @@ import CustomLoading from './CustomLoading';
  * @param {Object} props
  * @param {string} props.walletAddress - Wallet address to pass to Unity
  * @param {boolean} props.isVisible - Canvas visibility state
+ * @param {function} props.onBack - Back button callback
  */
-export default function GameCanvas({ walletAddress, isVisible }) {
+export default function GameCanvas({ walletAddress, isVisible, onBack }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const unityInstanceRef = useRef(null);
@@ -233,6 +234,21 @@ export default function GameCanvas({ walletAddress, isVisible }) {
         maxHeight: '100vh'
       }}
     >
+      {/* Back Button */}
+      {onBack && isVisible && !isLoading && (
+        <button
+          onClick={onBack}
+          className="absolute -top-16 left-0 pixel-button-secondary text-xs px-6 py-2 z-10"
+          style={{
+            fontSize: '10px',
+            padding: '8px 16px',
+            border: '3px solid #3b82f6'
+          }}
+        >
+          ← BACK TO MENU
+        </button>
+      )}
+
       {/* Unity Canvas */}
       <canvas
         ref={canvasRef}
@@ -264,10 +280,10 @@ export default function GameCanvas({ walletAddress, isVisible }) {
       {/* Unity Warning Banner */}
       <div id="unity-warning" className="fixed bottom-5 left-1/2 -translate-x-1/2 max-w-2xl z-[3000]" />
 
-      {/* Device indicator (debug) */}
+      {/* Device indicator (debug) - BOTTOM LEFT, TEXT ONLY */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-          {isMobile ? 'Mobile' : 'Desktop'} - {dimensions.width}x{dimensions.height}
+        <div className="fixed bottom-4 left-4 bg-black/70 text-white text-xs px-3 py-2 rounded font-pixel z-[9999]">
+          {isMobile ? '📱 Mobile' : '💻 Desktop'}
         </div>
       )}
     </div>
