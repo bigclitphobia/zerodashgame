@@ -40,6 +40,7 @@ lerna-debug.log*
 
 # Local Credentials (keep these private!)
 wrangler.toml
+!react-version/wrangler.toml
 .wrangler/
 
 # Temporary Files
